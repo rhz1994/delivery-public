@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "7da9d644805af85bd237c29b6490e3c3"
-name = "delivery-public-app"
+name = "Local Delivery Windows"
 application_url = "https://example.com"
 embedded = true
 
