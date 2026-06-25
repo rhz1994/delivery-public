@@ -1,0 +1,201 @@
+{{ 'grona-delivery.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'grona-delivery.js' | asset_url }}" defer="defer"></script>
+
+<div
+  id="GgDelivery-{{ block.id }}"
+  class="gg-delivery"
+  data-grona-delivery
+  data-endpoint="{{ routes.root_url }}apps/gordon-delivery"
+  data-cart-url="{{ routes.cart_url }}.js"
+  data-cart-update-url="{{ routes.cart_update_url }}.js"
+  data-cart-add-path="{{ routes.cart_add_url }}"
+  data-auto-open="{{ block.settings.auto_open }}"
+  data-dev="{{ block.settings.dev_mode }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="gg-delivery__backdrop" data-gg-backdrop hidden></div>
+
+  <section
+    class="gg-delivery__drawer"
+    data-gg-drawer
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="GgDeliveryTitle-{{ block.id }}"
+    hidden
+  >
+    <header class="gg-delivery__header">
+      <div>
+        <h2 id="GgDeliveryTitle-{{ block.id }}">Välj leveranssätt</h2>
+        <p class="gg-delivery__eyebrow">Leverans från Gröna Gårdar</p>
+      </div>
+      <button
+        class="gg-delivery__close"
+        type="button"
+        data-gg-close
+        aria-label="Stäng val av leverans"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+      {% if block.settings.dev_mode %}
+        <button
+          class="gg-delivery__dev-reset"
+          type="button"
+          data-gg-reset
+          title="Endast i utvecklingsläge: rensar leveransvalet"
+        >
+          Nollställ leverans (dev)
+        </button>
+      {% endif %}
+    </header>
+
+    <div class="gg-delivery__progress" aria-label="Leveransvalets steg">
+      <span data-gg-progress="1"></span>
+      <span data-gg-progress="2"></span>
+      <span data-gg-progress="3"></span>
+      <span data-gg-progress="4"></span>
+    </div>
+
+    <div class="gg-delivery__body">
+      <div class="gg-delivery__step" data-gg-step="1">
+        <div class="gg-delivery__intro">
+          <h3>Var ska maten levereras?</h3>
+          <p>
+            Fyll i ditt postnummer för att se dina leveransalternativ och
+            tillgängliga dagar i ditt område.
+          </p>
+        </div>
+
+        <form data-gg-zipcode-form>
+          <label class="gg-delivery__label" for="GgZipcode-{{ block.id }}">
+            Postnummer
+          </label>
+          <div class="gg-delivery__postcode" data-gg-postcode-box>
+            <input
+              id="GgZipcode-{{ block.id }}"
+              data-gg-zipcode
+              name="zipcode"
+              type="text"
+              inputmode="numeric"
+              autocomplete="postal-code"
+              maxlength="6"
+              placeholder="Ange postnummer"
+              required
+            >
+          </div>
+          <p class="gg-delivery__status" data-gg-status role="status" aria-live="polite"></p>
+          <button class="gg-delivery__primary" data-gg-zipcode-submit type="submit">
+            Bekräfta postnummer
+          </button>
+        </form>
+      </div>
+
+      <div class="gg-delivery__step" data-gg-step="2" hidden>
+        <div class="gg-delivery__intro">
+          <button class="gg-delivery__back" type="button" data-gg-back="1">
+            &larr; Ändra postnummer
+          </button>
+          <h3>Hur vill du få din beställning?</h3>
+          <p data-gg-postcode-summary></p>
+        </div>
+
+        <div class="gg-delivery__tabs" role="tablist" aria-label="Typ av leverans">
+          <button
+            class="is-active"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            data-gg-delivery-tab
+          >
+            Hemleverans
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-gg-pickup-tab
+          >
+            Utlämningsställe
+          </button>
+        </div>
+
+        <div class="gg-delivery__date-flow" data-gg-date-flow hidden>
+          <div class="gg-delivery__flow-heading">
+            <h3>Välj dag</h3>
+            <p>Endast tillgängliga leveransdagar går att välja.</p>
+          </div>
+
+          <div class="gg-delivery__date-card" data-gg-date-card hidden>
+            <span class="gg-delivery__summary-icon" aria-hidden="true">▣</span>
+            <span>
+              <strong data-gg-selected-date></strong>
+              <small data-gg-selected-week></small>
+            </span>
+            <button type="button" data-gg-edit-date>Ändra</button>
+          </div>
+
+          <div class="gg-delivery__calendar" data-gg-calendar>
+            <div class="gg-delivery__calendar-head">
+              <button type="button" data-gg-prev-month aria-label="Föregående månad">&lsaquo;</button>
+              <strong data-gg-calendar-title></strong>
+              <button type="button" data-gg-next-month aria-label="Nästa månad">&rsaquo;</button>
+            </div>
+            <div class="gg-delivery__weekdays" aria-hidden="true">
+              <span>må</span><span>ti</span><span>on</span><span>to</span>
+              <span>fr</span><span>lö</span><span>sö</span>
+            </div>
+            <div class="gg-delivery__days" data-gg-calendar-days></div>
+          </div>
+
+          <p class="gg-delivery__status" data-gg-date-status role="status" aria-live="polite"></p>
+
+          <div class="gg-delivery__location-flow" data-gg-location-flow hidden>
+            <div class="gg-delivery__flow-heading">
+              <h3>Välj leveransställe</h3>
+              <p>Tid bekräftas via SMS före leverans.</p>
+            </div>
+            <fieldset class="gg-delivery__locations">
+              <legend class="visually-hidden">Tillgängliga leveransställen</legend>
+              <div data-gg-location-list></div>
+            </fieldset>
+
+            <p class="gg-delivery__status" data-gg-location-status role="status" aria-live="polite"></p>
+            <button class="gg-delivery__primary" data-gg-confirm type="button" disabled>
+              Bekräfta leverans
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="gg-delivery__step gg-delivery__success" data-gg-step="5" hidden>
+        <span class="gg-delivery__success-mark" aria-hidden="true">✓</span>
+        <h3>Leveransen är vald</h3>
+        <p data-gg-success-summary></p>
+        <button class="gg-delivery__primary" data-gg-finish type="button">
+          Fortsätt handla
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "Leveransdrawer",
+  "target": "body",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "auto_open",
+      "label": "Öppna efter Lägg i varukorg",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "dev_mode",
+      "label": "Utvecklingsläge (visa Nollställ-knapp)",
+      "info": "Visar en knapp i drawern för att rensa leveransvalet vid testning. Stäng av i produktion.",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

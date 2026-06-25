@@ -1,0 +1,27 @@
+query RunInput {
+  cart {
+    deliveryDate: attribute(key: "Leveransdatum") {
+      value
+    }
+    deliveryMethod: attribute(key: "Leveranssätt") {
+      value
+    }
+    locationName: attribute(key: "Leveransställe") {
+      value
+    }
+    selectedPostcode: attribute(key: "Postnummer") {
+      value
+    }
+    deliveryGroups {
+      id
+      deliveryOptions {
+        handle
+        title
+        code
+      }
+      deliveryAddress {
+        zip
+      }
+    }
+  }
+}

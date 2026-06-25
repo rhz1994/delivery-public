@@ -1,0 +1,12 @@
+api_version = "2026-04"
+
+[[extensions]]
+name = "Delivery postcode validation"
+handle = "delivery-postcode-validation"
+type = "function"
+uid = "e127dcd9-db05-45d3-9951-5411be2e3414"
+
+[[extensions.targeting]]
+target = "cart.validations.generate.run"
+input_query = "src/run.graphql"
+export = "run"

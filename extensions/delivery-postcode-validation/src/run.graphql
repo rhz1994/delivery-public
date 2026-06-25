@@ -1,0 +1,26 @@
+query RunInput {
+  buyerJourney {
+    step
+  }
+  shop {
+    localTime {
+      date
+    }
+  }
+  cart {
+    selectedPostcode: attribute(key: "Postnummer") {
+      value
+    }
+    deliveryMethod: attribute(key: "Leveranssätt") {
+      value
+    }
+    stopDate: attribute(key: "_stop_date") {
+      value
+    }
+    deliveryGroups {
+      deliveryAddress {
+        zip
+      }
+    }
+  }
+}

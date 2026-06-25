@@ -1,0 +1,20 @@
+{
+  "name": "delivery-postcode-validation",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@shopify/shopify_function": "~2.0.0"
+  },
+  "codegen": {
+    "schema": "schema.graphql",
+    "documents": "src/*.graphql",
+    "generates": {
+      "generated/api.d.ts": {
+        "plugins": [
+          "typescript",
+          "typescript-operations"
+        ]
+      }
+    }
+  }
+}
