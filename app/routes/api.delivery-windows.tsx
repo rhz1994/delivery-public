@@ -1,10 +1,11 @@
-import { timingSafeEqual } from "node:crypto";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import prisma from "../db.server";
+import { resolveShopFromApiKey } from "../api-credentials.server";
 
 type ImportMode = "upsert" | "replace_upcoming";
 
 type DeliveryWindowImportItem = {
+  shop: string;
   zipcode: string | null;
   deliveryDate: Date;
   packDate: Date;
@@ -43,17 +44,13 @@ function parseApiKey(request: Request) {
   return match?.[1] || "";
 }
 
-function hasValidApiKey(request: Request) {
-  const configuredKey = process.env.EXTERNAL_DELIVERY_WINDOWS_API_KEY;
-  if (!configuredKey) {
-    throw new Error("EXTERNAL_DELIVERY_WINDOWS_API_KEY is not configured");
-  }
-
+// Avgör vilken butik ett anrop skriver till genom att slå upp den per-butik-nyckel
+// (ApiCredential) som anroparen skickar som Bearer-token. Returnerar butikens shop,
+// eller null om nyckeln är ogiltig. Varje butik har sin egen nyckel och kan bara
+// skriva till sin egen data.
+async function resolveShop(request: Request): Promise<string | null> {
   const providedKey = parseApiKey(request);
-  const configured = Buffer.from(configuredKey);
-  const provided = Buffer.from(providedKey);
-
-  return configured.length === provided.length && timingSafeEqual(configured, provided);
+  return resolveShopFromApiKey(providedKey);
 }
 
 function stockholmToday() {
@@ -109,7 +106,7 @@ function normalizeZipcode(value: unknown, path: string, errors: string[]) {
   return zipcode;
 }
 
-function validatePayload(payload: unknown): ValidationResult {
+function validatePayload(payload: unknown, shop: string): ValidationResult {
   const errors: string[] = [];
 
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
@@ -205,6 +202,7 @@ function validatePayload(payload: unknown): ValidationResult {
       seenKeys.add(key);
 
       items.push({
+        shop,
         zipcode,
         deliveryDate,
         packDate,
@@ -232,6 +230,7 @@ async function upsertDeliveryWindows(items: DeliveryWindowImportItem[]) {
       for (const item of items) {
         const existing = await tx.deliveryWindow.findFirst({
           where: {
+            shop: item.shop,
             zipcode: item.zipcode,
             deliveryDate: item.deliveryDate,
             deliveryLocationId: item.deliveryLocationId,
@@ -263,13 +262,14 @@ async function upsertDeliveryWindows(items: DeliveryWindowImportItem[]) {
 }
 
 async function replaceUpcomingDeliveryWindows(
+  shop: string,
   replaceFromDate: Date,
   items: DeliveryWindowImportItem[],
 ) {
   const result = await prisma.$transaction(
     async (tx) => {
       const deleted = await tx.deliveryWindow.deleteMany({
-        where: { deliveryDate: { gte: replaceFromDate } },
+        where: { shop, deliveryDate: { gte: replaceFromDate } },
       });
 
       const created = await tx.deliveryWindow.createMany({ data: items });
@@ -301,13 +301,16 @@ export async function action({ request }: ActionFunctionArgs) {
     return methodNotAllowed();
   }
 
+  let shop: string | null;
   try {
-    if (!hasValidApiKey(request)) {
-      return json({ error: "Unauthorized. Send a valid Bearer token." }, 401);
-    }
+    shop = await resolveShop(request);
   } catch (error) {
-    console.error("[delivery-windows-api] configuration error", error);
-    return json({ error: "Delivery windows API is not configured." }, 500);
+    console.error("[delivery-windows-api] auth lookup failed", error);
+    return json({ error: "Delivery windows API is unavailable." }, 500);
+  }
+
+  if (!shop) {
+    return json({ error: "Unauthorized. Send a valid Bearer token." }, 401);
   }
 
   let payload: unknown;
@@ -317,7 +320,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ error: "Request body must be valid JSON." }, 400);
   }
 
-  const validation = validatePayload(payload);
+  const validation = validatePayload(payload, shop);
   if (!validation.ok) {
     return json({ error: "Validation failed.", details: validation.errors }, 400);
   }
@@ -325,6 +328,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     if (validation.mode === "replace_upcoming") {
       const result = await replaceUpcomingDeliveryWindows(
+        shop,
         validation.replaceFromDate,
         validation.items,
       );

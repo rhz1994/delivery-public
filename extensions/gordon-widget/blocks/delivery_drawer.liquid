@@ -5,12 +5,18 @@
   id="GgDelivery-{{ block.id }}"
   class="gg-delivery"
   data-grona-delivery
-  data-endpoint="{{ routes.root_url }}apps/gordon-delivery"
+  data-endpoint="{{ routes.root_url }}apps/delivery"
   data-cart-url="{{ routes.cart_url }}.js"
   data-cart-update-url="{{ routes.cart_update_url }}.js"
   data-cart-add-path="{{ routes.cart_add_url }}"
   data-auto-open="{{ block.settings.auto_open }}"
   data-dev="{{ block.settings.dev_mode }}"
+  style="
+    {% if block.settings.color_primary != blank %}--gg-green: {{ block.settings.color_primary }};{% endif %}
+    {% if block.settings.color_primary_hover != blank %}--gg-green-hover: {{ block.settings.color_primary_hover }};{% endif %}
+    {% if block.settings.color_background != blank %}--gg-cream: {{ block.settings.color_background }};{% endif %}
+    {% if block.settings.color_text != blank %}--gg-ink: {{ block.settings.color_text }};{% endif %}
+  "
   {{ block.shopify_attributes }}
 >
   <div class="gg-delivery__backdrop" data-gg-backdrop hidden></div>
@@ -25,8 +31,15 @@
   >
     <header class="gg-delivery__header">
       <div>
-        <h2 id="GgDeliveryTitle-{{ block.id }}">Välj leveranssätt</h2>
-        <p class="gg-delivery__eyebrow">Leverans från Gröna Gårdar</p>
+        <h2 id="GgDeliveryTitle-{{ block.id }}">
+          {{ block.settings.drawer_title | default: 'Välj leveranssätt' }}
+        </h2>
+        {% if block.settings.merchant_name != blank %}
+          <p class="gg-delivery__eyebrow">
+            {{ block.settings.eyebrow_prefix | default: 'Leverans från' }}
+            {{ block.settings.merchant_name }}
+          </p>
+        {% endif %}
       </div>
       <button
         class="gg-delivery__close"
@@ -183,6 +196,52 @@
   "name": "Leveransdrawer",
   "target": "body",
   "settings": [
+    {
+      "type": "text",
+      "id": "merchant_name",
+      "label": "Butikens namn",
+      "info": "Visas som 'Leverans från [namn]' överst i drawern. Lämna tomt för att dölja raden."
+    },
+    {
+      "type": "text",
+      "id": "eyebrow_prefix",
+      "label": "Text före butiksnamnet",
+      "default": "Leverans från"
+    },
+    {
+      "type": "text",
+      "id": "drawer_title",
+      "label": "Rubrik i drawern",
+      "default": "Välj leveranssätt"
+    },
+    {
+      "type": "header",
+      "content": "Färger"
+    },
+    {
+      "type": "color",
+      "id": "color_primary",
+      "label": "Primärfärg (knappar, accent)",
+      "default": "#0d2b29"
+    },
+    {
+      "type": "color",
+      "id": "color_primary_hover",
+      "label": "Primärfärg vid hover",
+      "default": "#163f3c"
+    },
+    {
+      "type": "color",
+      "id": "color_background",
+      "label": "Bakgrund i drawern",
+      "default": "#fdf8f0"
+    },
+    {
+      "type": "color",
+      "id": "color_text",
+      "label": "Textfärg",
+      "default": "#111110"
+    },
     {
       "type": "checkbox",
       "id": "auto_open",

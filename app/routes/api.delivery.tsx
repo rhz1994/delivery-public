@@ -9,7 +9,8 @@ const CACHE_OK = "public, max-age=300, stale-while-revalidate=60";
 const CACHE_NONE = "no-store";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  await authenticate.public.appProxy(request);
+  // App-proxyn ger oss vilken butik anropet kommer från (multi-tenant).
+  const { session } = await authenticate.public.appProxy(request);
   const response = (data: unknown, status = 200) =>
     new Response(JSON.stringify(data), {
       status,
@@ -20,13 +21,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
     });
 
+  if (!session?.shop) {
+    return response({ error: "Kunde inte identifiera butiken." }, 401);
+  }
+
   const url = new URL(request.url);
   const zipcode = (url.searchParams.get("zipcode") || "")
     .replace(/\s/g, "")
     .trim();
 
   try {
-    const result = await getDeliveryAvailability(zipcode);
+    const result = await getDeliveryAvailability(session.shop, zipcode);
     return response(result);
   } catch (error) {
     console.error("Delivery availability request failed", error);

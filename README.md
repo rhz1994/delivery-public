@@ -85,7 +85,7 @@ plockar upp valt leveransställe med ordern.**
 Shopify-tema
   └─ Theme App Extension: app-blocket "Leveransdrawer"
        └─ grona-delivery.js  (drawer, kalender, val, cart attributes)
-            └─ GET /apps/gordon-delivery?zipcode=NNNNN
+            └─ GET /apps/delivery?zipcode=NNNNN
                  └─ Shopify App Proxy  →  /api/delivery
                       └─ React Router-backend (api.delivery.tsx)
                            └─ delivery.server.ts
@@ -109,9 +109,10 @@ Shopify-tema
 - Sparar valet i Shopify-varukorgen och kan återställa ett tidigare val.
 
 **Databas** ([prisma/schema.prisma](prisma/schema.prisma)): tabellen
-`DeliveryWindow` speglar CSV-kolumnerna. `zipcode` är nullbar (NULL = alla
-postnummer). Unikt index på `[zipcode, deliveryDate, deliveryLocationId]` och
-index på `zipcode` för uppslag.
+`DeliveryWindow` speglar CSV-kolumnerna och taggas med `shop` (multi-tenant).
+`zipcode` är nullbar (NULL = alla postnummer). Unikt index på
+`[shop, zipcode, deliveryDate, deliveryLocationId]` och index på
+`[shop, zipcode]` för uppslag.
 
 ## App Proxy
 
@@ -120,11 +121,11 @@ Konfigureras i [shopify.app.toml](shopify.app.toml):
 ```toml
 [app_proxy]
 url = "https://<app-domain>/api/delivery"
-subpath = "gordon-delivery"
+subpath = "delivery"
 prefix = "apps"
 ```
 
-Det ger butiks-URL:en `/apps/gordon-delivery`, som temat anropar. Vid
+Det ger butiks-URL:en `/apps/delivery`, som temat anropar. Vid
 `shopify app dev` uppdateras URL:erna automatiskt till den aktuella dev-tunneln;
 den incheckade `https://example.com` är en neutral platshållare så proxyn inte
 av misstag pekar på en gammal tjänst.

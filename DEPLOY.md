@@ -13,7 +13,7 @@ npm run dev
 
 `shopify app dev` should update `application_url`, auth redirect URLs and app
 proxy URL to the current dev tunnel. The committed `shopify.app.toml` uses
-`https://example.com` as a neutral placeholder so `/apps/gordon-delivery` does
+`https://example.com` as a neutral placeholder so `/apps/delivery` does
 not accidentally point at an old Railway service.
 
 Before deploying again:

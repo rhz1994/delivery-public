@@ -18,7 +18,8 @@ export default function App() {
   return (
     <AppProvider embedded apiKey={apiKey}>
       <s-app-nav>
-        <s-link href="/app">Home</s-link>
+        <s-link href="/app">Hem</s-link>
+        <s-link href="/app/delivery-data">Leveransdata</s-link>
         <s-link href="/app/activate-delivery-customization">
           Aktivera leveransanpassning
         </s-link>

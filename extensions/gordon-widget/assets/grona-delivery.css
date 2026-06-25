@@ -1,24 +1,21 @@
 .gg-delivery {
-  /* Gröna Gårdar style — hardcoded so the widget never depends on the
-     theme's Global Styles being present. Theme tokens still win when they
-     exist (var(--token, fallback)), but the fallbacks ARE the brand values. */
-  /* Green is hardcoded (NOT inherited) — the theme's --green can be a
-     different/lighter value per store, and we always want Gröna Gårdar's
-     dark green here. */
+  /* Default colors. The block's color settings override these via inline
+     custom properties (style="--gg-green: …"), so each store can theme the
+     widget from the theme editor. The values below are just the fallbacks. */
   --gg-green: #0d2b29;
   --gg-green-hover: #163f3c;
   --gg-green-text: #3d4535;
   /* Theme's light-green accent (color_on_image_accent) — used for highlighted
      text on dark/green backgrounds elsewhere in the theme. */
   --gg-green-light: var(--wld-on-image-accent, #70e2a2);
-  --gg-cream: var(--cream, #fdf8f0);
+  --gg-cream: #fdf8f0;
   --gg-warm: var(--warm, #f5efe0);
   --gg-white: var(--white, #ffffff);
-  --gg-ink: var(--black, #111110);
+  --gg-ink: #111110;
   --gg-muted: var(--mid, #767670);
   --gg-border: var(--border, #acab9f);
   --gg-error: #a33a2d;
-  /* Gröna Gårdar standard radius is 5px throughout. */
+  /* Consistent 5px radius throughout. */
   --gg-radius-sm: 5px;
   --gg-radius-xs: 5px;
   /* Brandon Text is the theme's single type family (serif + sans both map to it). */

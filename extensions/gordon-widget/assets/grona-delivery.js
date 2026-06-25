@@ -542,7 +542,7 @@
     }
 
     async function loadAvailability() {
-      // data-endpoint sätts av blocket till app-proxy-subpathen (apps/gordon-delivery).
+      // data-endpoint sätts av blocket till app-proxy-subpathen (apps/delivery).
       const endpoint = String(root.dataset.endpoint || "");
       const url = new URL(endpoint, window.location.origin);
       url.searchParams.set("zipcode", state.zipcode);

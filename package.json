@@ -1,5 +1,5 @@
 {
-  "name": "gordon-delivery-widget",
+  "name": "delivery-public-app",
   "private": true,
   "scripts": {
     "build": "react-router build",

@@ -1,5 +1,8 @@
-// Importerar delivery_data.csv till DeliveryWindow-tabellen.
-// Kör från gordon-delivery-widget/:  node prisma/import-csv.mjs
+// Engångs-/utvecklingsverktyg: importerar delivery_data.csv till en butiks
+// DeliveryWindow-rader. INTE en del av den generella appen — där laddar varje
+// butik upp sin egen CSV i admin (paket 4) eller matar via API:t.
+//
+// Kör:  node prisma/import-csv.mjs <shop.myshopify.com>
 //
 // CSV-kolumner: delivery_date,pack_date,home_delivery,delivery_location_id,stop_date,zipcode,delivery_location_name
 // zipcode = "NULL" tolkas som null (= gäller alla postnummer, t.ex. utlämningsställen).
@@ -17,6 +20,14 @@ const prisma = new PrismaClient();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CSV_PATH = resolve(__dirname, "../../delivery_data.csv");
 const BATCH_SIZE = 5000;
+
+// Multi-tenant: varje rad måste taggas med butiken. Ange vilken butik denna
+// import gäller som argument: node prisma/import-csv.mjs <shop.myshopify.com>
+const SHOP = process.argv[2];
+if (!SHOP || !SHOP.includes(".myshopify.com")) {
+  console.error("❌ Ange butik som argument, t.ex.: node prisma/import-csv.mjs din-butik.myshopify.com");
+  process.exit(1);
+}
 
 // Minimal CSV-radparser: respekterar dubbelcitat så komma inne i fält
 // (t.ex. "ICA Supermarket Möllevången, Malmö") inte delar raden fel.
@@ -76,6 +87,7 @@ async function main() {
     ] = f;
 
     rows.push({
+      shop: SHOP,
       deliveryDate: toDate(deliveryDate),
       packDate: toDate(packDate),
       stopDate: toDate(stopDate),
@@ -90,8 +102,8 @@ async function main() {
     console.log(`⚠️  Hoppade över ${skipped} rader med oväntat antal fält.`);
   }
 
-  console.log("Tömmer befintlig DeliveryWindow-tabell ...");
-  await prisma.deliveryWindow.deleteMany();
+  console.log(`Tömmer befintliga rader för ${SHOP} ...`);
+  await prisma.deliveryWindow.deleteMany({ where: { shop: SHOP } });
 
   console.log(`Importerar ${rows.length} rader i batchar om ${BATCH_SIZE} ...`);
   let inserted = 0;

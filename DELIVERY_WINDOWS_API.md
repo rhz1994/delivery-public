@@ -27,11 +27,10 @@ Authorization: Bearer <secret>
 Content-Type: application/json
 ```
 
-Token sätts som miljövariabel på servern:
-
-```env
-EXTERNAL_DELIVERY_WINDOWS_API_KEY=replace-with-long-random-secret
-```
+Varje butik genererar sin egen nyckel i appens admin. Nyckeln visas en gång och
+lagras bara hashad. API:t avgör vilken butik anropet gäller utifrån nyckeln —
+en butik kan bara läsa och skriva sin egen leveransdata. Generera om nyckeln i
+admin för att rotera (den gamla slutar då gälla).
 
 Skicka aldrig nyckeln i query string eller i request body.
 

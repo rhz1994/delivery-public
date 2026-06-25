@@ -43,7 +43,48 @@ function stockholmToday(): Date {
   return new Date(`${parts}T00:00:00.000Z`);
 }
 
+export type DeliverySummary = {
+  total: number;
+  upcoming: number; // stopDate >= idag
+  firstDeliveryDate: string | null;
+  lastDeliveryDate: string | null;
+  lastImportAt: string | null; // senast skapad/uppdaterad rad (ISO)
+};
+
+// Sammanfattning för butikens admin-översikt.
+export async function getDeliverySummary(shop: string): Promise<DeliverySummary> {
+  const today = stockholmToday();
+
+  const [total, upcoming, range, latest] = await Promise.all([
+    prisma.deliveryWindow.count({ where: { shop } }),
+    prisma.deliveryWindow.count({ where: { shop, stopDate: { gte: today } } }),
+    prisma.deliveryWindow.aggregate({
+      where: { shop },
+      _min: { deliveryDate: true },
+      _max: { deliveryDate: true },
+    }),
+    prisma.deliveryWindow.findFirst({
+      where: { shop },
+      orderBy: { updatedAt: "desc" },
+      select: { updatedAt: true },
+    }),
+  ]);
+
+  return {
+    total,
+    upcoming,
+    firstDeliveryDate: range._min.deliveryDate
+      ? toIsoDate(range._min.deliveryDate)
+      : null,
+    lastDeliveryDate: range._max.deliveryDate
+      ? toIsoDate(range._max.deliveryDate)
+      : null,
+    lastImportAt: latest?.updatedAt ? latest.updatedAt.toISOString() : null,
+  };
+}
+
 export async function getDeliveryAvailability(
+  shop: string,
   zipcode: string,
 ): Promise<DeliveryAvailability> {
   if (!ZIPCODE_PATTERN.test(zipcode)) {
@@ -55,10 +96,12 @@ export async function getDeliveryAvailability(
 
   const today = stockholmToday();
 
-  // Hämta kundens postnummer + alla NULL-postnummer (gäller alla),
-  // men bara alternativ vars sista beställningsdag inte passerat.
+  // Hämta butikens egna leveransfönster: kundens postnummer + alla
+  // NULL-postnummer (gäller alla), men bara alternativ vars sista
+  // beställningsdag inte passerat.
   const rows = await prisma.deliveryWindow.findMany({
     where: {
+      shop,
       OR: [{ zipcode }, { zipcode: null }],
       stopDate: { gte: today },
     },

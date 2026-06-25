@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "7da9d644805af85bd237c29b6490e3c3"
-name = "grona-gardar-delivery-public"
+name = "delivery-public-app"
 application_url = "https://example.com"
 embedded = true
 
@@ -16,6 +16,18 @@ api_version = "2026-07"
   uri = "/webhooks/app/scopes_update"
   topics = [ "app/scopes_update" ]
 
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/customers/data_request"
+  topics = [ "customers/data_request" ]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/customers/redact"
+  topics = [ "customers/redact" ]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/shop/redact"
+  topics = [ "shop/redact" ]
+
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "write_validations,write_delivery_customizations"
@@ -25,7 +37,7 @@ redirect_urls = [ "https://example.com/api/auth" ]
 
 [app_proxy]
 url = "https://example.com/api/delivery"
-subpath = "gordon-delivery"
+subpath = "delivery"
 prefix = "apps"
 
 [build]

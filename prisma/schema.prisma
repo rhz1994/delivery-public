@@ -33,9 +33,22 @@ model Session {
   refreshTokenExpires DateTime?
 }
 
+// Per-butik API-nyckel för det skrivande delivery-windows-API:t.
+// En aktiv nyckel per butik (shop unik). Att generera om ersätter den gamla
+// (rotation). Nyckeln visas en gång i admin och lagras bara hashad.
+model ApiCredential {
+  id         Int      @id @default(autoincrement())
+  shop       String   @unique
+  hashedKey  String   // SHA-256-hash av den hemliga nyckeln
+  label      String?  // valfri etikett, t.ex. "Thea" eller "Gordon"
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime?
+}
+
 model DeliveryWindow {
   id                   Int      @id @default(autoincrement())
 
+  shop                 String   // butiken som äger denna rad (multi-tenant)
   zipcode              String?  // null = gäller alla postnummer (t.ex. utlämningsställen)
   deliveryDate         DateTime @db.Date
   packDate             DateTime @db.Date
@@ -47,6 +60,6 @@ model DeliveryWindow {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  @@unique([zipcode, deliveryDate, deliveryLocationId])
-  @@index([zipcode])
+  @@unique([shop, zipcode, deliveryDate, deliveryLocationId])
+  @@index([shop, zipcode])
 }
